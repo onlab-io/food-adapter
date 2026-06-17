@@ -23,7 +23,7 @@ class Settings(BaseSettings):
     # --- Supabase Storage (REST) ---
     supabase_url: str = ""                   # es. https://<ref>.supabase.co
     supabase_service_key: str = ""           # service_role key (MAI esposta al client)
-    storage_bucket: str = "food-adapter"
+    storage_bucket: str = "photo-adapter"
 
     # --- Adobe Firefly Services / Photoshop API (Fase 2) ---
     adobe_client_id: str = ""                # OAuth Server-to-Server (server-side, mai loggato)

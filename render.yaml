@@ -2,7 +2,7 @@
 # Crea il servizio da "New + → Blueprint" puntando a questo repo, oppure replica manualmente.
 services:
   - type: web
-    name: food-adapter-api
+    name: photo-adapter-api
     runtime: docker
     dockerfilePath: ./backend/Dockerfile
     dockerContext: ./backend
@@ -27,7 +27,7 @@ services:
       - key: SUPABASE_SERVICE_KEY
         sync: false
       - key: STORAGE_BUCKET
-        value: food-adapter
+        value: photo-adapter
       # --- Adobe (Fase 2, opzionali: senza chiavi resta lo stub locale) ---
       - key: DEFAULT_RENDER_ENGINE
         value: local

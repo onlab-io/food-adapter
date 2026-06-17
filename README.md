@@ -98,14 +98,14 @@ CORS_ORIGINS=https://<dominio-frontend>
 DATABASE_URL=postgresql+psycopg://postgres:<DB_PASSWORD>@db.<REF>.supabase.co:5432/postgres
 SUPABASE_URL=https://<REF>.supabase.co
 SUPABASE_SERVICE_KEY=<service_role key>     # MAI esporre al client
-STORAGE_BUCKET=food-adapter
+STORAGE_BUCKET=photo-adapter
 ```
 
 Passi:
 1. Crea (o usa) un progetto Supabase.
 2. Applica `supabase/0001_init.sql` (dashboard SQL editor o Supabase MCP). In alternativa il
    backend crea le tabelle automaticamente all'avvio (`create_all`).
-3. Crea un bucket di storage **privato** chiamato `food-adapter`.
+3. Crea un bucket di storage **privato** chiamato `photo-adapter`.
 4. Imposta le variabili sopra e riavvia il backend. `GET /health` deve riportare `"storage":"supabase"`.
 
 ---

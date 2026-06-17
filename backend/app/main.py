@@ -29,7 +29,7 @@ async def lifespan(app: FastAPI):
     yield
 
 
-app = FastAPI(title="Food Image Multi-Format Adapter", version="1.0.0-fase1", lifespan=lifespan)
+app = FastAPI(title="Photo Adapter", version="1.0.0", lifespan=lifespan)
 
 _settings = get_settings()
 app.add_middleware(

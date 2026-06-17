@@ -21,7 +21,7 @@ export default function App() {
   return (
     <>
       <header className="app-header">
-        <span className="brand">🍽️ Food Image Adapter</span>
+        <span className="brand">📸 Photo Adapter</span>
         <span className="badge">Fase 1 crop · Fase 2 template AI</span>
         <nav className="nav">
           <button className={view === "batch" ? "active" : ""} onClick={() => setView("batch")}>

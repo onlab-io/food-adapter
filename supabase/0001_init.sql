@@ -68,4 +68,4 @@ create index if not exists idx_output_items_job on output_items (job_id);
 create index if not exists idx_output_items_stato on output_items (job_id, stato);
 
 -- NB: niente RLS in Fase 1. Il backend accede con la service key / connessione diretta;
--- il bucket di storage 'food-adapter' deve essere PRIVATO (accesso solo server-side).
+-- il bucket di storage 'photo-adapter' deve essere PRIVATO (accesso solo server-side).

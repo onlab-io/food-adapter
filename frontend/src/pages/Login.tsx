@@ -24,7 +24,7 @@ export default function Login({ onLogin }: { onLogin: () => void }) {
   return (
     <div className="login-wrap">
       <form className="panel login-card" onSubmit={submit}>
-        <h2>🍽️ Food Image Adapter</h2>
+        <h2>📸 Photo Adapter</h2>
         <p className="muted small">Inserisci la password per accedere.</p>
         {error && <div className="error-banner">{error}</div>}
         <div className="field">
