@@ -3,6 +3,7 @@ backend/.venv/
 __pycache__/
 *.pyc
 backend/.env
+frontend/.env
 backend/data/
 backend/smoke_out/
 
