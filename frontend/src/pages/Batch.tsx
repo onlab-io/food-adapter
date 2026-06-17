@@ -33,6 +33,7 @@ export default function Batch() {
   const [regen, setRegen] = useState<OutputItem | null>(null);
   const [regenPrompt, setRegenPrompt] = useState("");
   const [zoom, setZoom] = useState<OutputItem | null>(null);
+  const [dlFormat, setDlFormat] = useState<string>(""); // "" = formato del profilo; jpg|png|webp = ri-codifica
   const fileRef = useRef<HTMLInputElement>(null);
 
   const fmtById = useMemo(() => new Map(formats.map((f) => [f.id, f])), [formats]);
@@ -307,10 +308,19 @@ export default function Batch() {
             {errored > 0 && (
               <button onClick={async () => { await api.retryFailed(job!.id); refreshJob(); }}>Riprova falliti ({errored})</button>
             )}
-            <button className="primary" disabled={approved === 0} onClick={() => api.downloadZip(job!.id, true)}>
+            <label className="small muted" style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              Formato:
+              <select value={dlFormat} onChange={(e) => setDlFormat(e.target.value)} style={{ width: "auto" }}>
+                <option value="">come da profilo</option>
+                <option value="webp">WEBP</option>
+                <option value="jpg">JPG</option>
+                <option value="png">PNG</option>
+              </select>
+            </label>
+            <button className="primary" disabled={approved === 0} onClick={() => api.downloadZip(job!.id, true, dlFormat || undefined)}>
               Scarica ZIP approvati ({approved})
             </button>
-            <button disabled={done === 0} onClick={() => api.downloadZip(job!.id, false)}>ZIP tutti i completati</button>
+            <button disabled={done === 0} onClick={() => api.downloadZip(job!.id, false, dlFormat || undefined)}>ZIP tutti i completati</button>
             <button onClick={reset}>Nuovo batch</button>
           </div>
 
@@ -332,6 +342,7 @@ export default function Batch() {
                       label={m.label}
                       sublabel={m.sublabel}
                       filename={m.filename}
+                      dlFormat={dlFormat || undefined}
                       onChanged={refreshJob}
                       onRecrop={() => setRecrop(o)}
                       onRegenerate={() => { setRegen(o); setRegenPrompt(o.prompt_usato ?? ""); }}

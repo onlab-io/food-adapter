@@ -1,5 +1,7 @@
-"""Download singolo e zip del batch con naming/struttura configurabili (PRD RF-20/21)."""
+"""Download singolo e zip del batch con naming/struttura/formato configurabili (PRD RF-20/21)."""
 from __future__ import annotations
+
+from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import Response
@@ -8,7 +10,7 @@ from sqlalchemy.orm import Session
 
 from ..auth import require_auth
 from ..db import get_db
-from ..imaging.export import CONTENT_TYPE
+from ..imaging.export import CONTENT_TYPE, FORMATI_OUTPUT, riconverti
 from ..imaging.naming import nome_output
 from ..imaging.packaging import VoceZip, costruisci_zip
 from ..models import AppSetting, FormatProfile, Job, OutputItem, SourceImage, TemplateProfile
@@ -22,13 +24,16 @@ def _settings(db: Session) -> AppSetting:
     return s or AppSetting(id=1)
 
 
-def _nome_file(db: Session, item: OutputItem, st: AppSetting) -> tuple[str, str, str]:
-    """Restituisce (nome_file, label_formato, nome_originale). Gestisce crop e compose."""
-    src = db.get(SourceImage, item.source_image_id)
+def _profilo(db: Session, item: OutputItem):
     if item.kind == "compose":
-        p = db.get(TemplateProfile, item.template_profile_id)
-    else:
-        p = db.get(FormatProfile, item.format_profile_id)
+        return db.get(TemplateProfile, item.template_profile_id)
+    return db.get(FormatProfile, item.format_profile_id)
+
+
+def _nome_file(db: Session, item: OutputItem, st: AppSetting, ext: str) -> tuple[str, str, str]:
+    """(nome_file, label_formato, nome_originale) — ext è il formato effettivo di output."""
+    src = db.get(SourceImage, item.source_image_id)
+    p = _profilo(db, item)
     nome = nome_output(
         st.naming_pattern,
         src.original_filename if src else "master",
@@ -36,33 +41,41 @@ def _nome_file(db: Session, item: OutputItem, st: AppSetting) -> tuple[str, str,
         p.nome if p else "formato",
         p.larghezza_px if p else 0,
         p.altezza_px if p else 0,
-        p.formato_file if p else "jpg",
+        ext,
     )
     return nome, (p.nome if p else "formato"), (src.original_filename if src else "master")
 
 
+def _ext_e_bytes(db: Session, item: OutputItem, data: bytes, fmt: Optional[str]) -> tuple[str, bytes]:
+    """Determina l'estensione finale e i byte, ri-codificando se è richiesto un formato diverso."""
+    p = _profilo(db, item)
+    orig_ext = (p.formato_file if p else "jpg").lower()
+    if not fmt or fmt.lower() not in FORMATI_OUTPUT or fmt.lower() == orig_ext:
+        return orig_ext, data
+    qual = getattr(p, "qualita", 92) or 92
+    return fmt.lower(), riconverti(data, fmt.lower(), qual)
+
+
 @router.get("/outputs/{oid}/download")
-def scarica_singolo(oid: str, db: Session = Depends(get_db)):
+def scarica_singolo(oid: str, fmt: Optional[str] = None, db: Session = Depends(get_db)):
     item = db.get(OutputItem, oid)
     if not item or not item.storage_path:
         raise HTTPException(404, "Output non disponibile")
     st = _settings(db)
-    if item.kind == "compose":
-        p = db.get(TemplateProfile, item.template_profile_id)
-    else:
-        p = db.get(FormatProfile, item.format_profile_id)
-    nome, _, _ = _nome_file(db, item, st)
     data = get_storage().get(item.storage_path)
-    ct = CONTENT_TYPE.get(p.formato_file if p else "jpg", "application/octet-stream")
+    ext, data = _ext_e_bytes(db, item, data, fmt)
+    nome, _, _ = _nome_file(db, item, st, ext)
     return Response(
         content=data,
-        media_type=ct,
+        media_type=CONTENT_TYPE.get(ext, "application/octet-stream"),
         headers={"Content-Disposition": f'attachment; filename="{nome}"'},
     )
 
 
 @router.get("/jobs/{job_id}/download.zip")
-def scarica_zip(job_id: str, solo_approvati: bool = True, db: Session = Depends(get_db)):
+def scarica_zip(
+    job_id: str, solo_approvati: bool = True, fmt: Optional[str] = None, db: Session = Depends(get_db)
+):
     job = db.get(Job, job_id)
     if not job:
         raise HTTPException(404, "Job non trovato")
@@ -82,8 +95,9 @@ def scarica_zip(job_id: str, solo_approvati: bool = True, db: Session = Depends(
     for it in items:
         if not it.storage_path:
             continue
-        nome, label, originale = _nome_file(db, it, st)
-        voci.append(VoceZip(nome, label, originale, storage.get(it.storage_path)))
+        ext, data = _ext_e_bytes(db, it, storage.get(it.storage_path), fmt)
+        nome, label, originale = _nome_file(db, it, st, ext)
+        voci.append(VoceZip(nome, label, originale, data))
     zip_bytes = costruisci_zip(voci, struttura=st.zip_structure)
     return Response(
         content=zip_bytes,

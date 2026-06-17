@@ -134,13 +134,15 @@ export const api = {
     return URL.createObjectURL(blob);
   },
 
-  // download
-  async downloadOutput(id: string, filename: string) {
-    const blob = await call<Blob>(`/outputs/${id}/download`);
+  // download (fmt opzionale: 'jpg'|'png'|'webp' per ri-codificare; assente = formato del profilo)
+  async downloadOutput(id: string, filename: string, fmt?: string) {
+    const q = fmt ? `?fmt=${fmt}` : "";
+    const blob = await call<Blob>(`/outputs/${id}/download${q}`);
     triggerDownload(blob, filename);
   },
-  async downloadZip(jobId: string, soloApprovati: boolean) {
-    const blob = await call<Blob>(`/jobs/${jobId}/download.zip?solo_approvati=${soloApprovati}`);
+  async downloadZip(jobId: string, soloApprovati: boolean, fmt?: string) {
+    const q = `?solo_approvati=${soloApprovati}${fmt ? `&fmt=${fmt}` : ""}`;
+    const blob = await call<Blob>(`/jobs/${jobId}/download.zip${q}`);
     triggerDownload(blob, `batch-${jobId.slice(0, 8)}.zip`);
   },
 };

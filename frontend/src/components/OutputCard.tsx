@@ -16,6 +16,7 @@ export default function OutputCard({
   label,
   sublabel,
   filename,
+  dlFormat,
   onChanged,
   onRecrop,
   onRegenerate,
@@ -25,11 +26,13 @@ export default function OutputCard({
   label: string;
   sublabel: string;
   filename: string;
+  dlFormat?: string;
   onChanged: () => void;
   onRecrop: () => void;
   onRegenerate: () => void;
   onZoom: () => void;
 }) {
+  const dlName = dlFormat ? filename.replace(/\.[^.]+$/, "." + dlFormat) : filename;
   const tag = STATO_TAG[output.stato] ?? { cls: "muted", label: output.stato };
   const ready = output.stato === "done" || output.stato === "approved";
   const isCompose = output.kind === "compose";
@@ -70,7 +73,7 @@ export default function OutputCard({
           ) : (
             <button className="small" onClick={onRecrop}>Ritaglia</button>
           )}
-          <button className="small" onClick={() => api.downloadOutput(output.id, filename)}>Scarica</button>
+          <button className="small" onClick={() => api.downloadOutput(output.id, dlName, dlFormat || undefined)}>Scarica</button>
           <button className="small danger" onClick={async () => { await api.discardOutput(output.id); onChanged(); }}>
             Scarta
           </button>

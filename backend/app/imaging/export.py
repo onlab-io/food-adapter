@@ -101,6 +101,17 @@ def _encode(
     return buf.getvalue()
 
 
+def riconverti(data: bytes, fmt: str, qualita: int = 92) -> bytes:
+    """Ri-codifica byte immagine in un altro formato (per la scelta del formato al download)."""
+    fmt = fmt.lower()
+    if fmt not in FORMATI_OUTPUT:
+        raise ValueError(f"Formato non supportato: {fmt}")
+    with Image.open(io.BytesIO(data)) as im:
+        im.load()
+        icc = im.info.get("icc_profile")
+        return _encode(im, fmt, qualita, (255, 255, 255), icc)
+
+
 def verifica_dimensioni(data: bytes, target_w: int, target_h: int) -> bool:
     """Riapre i byte e conferma le dimensioni esatte (usato nei test/verifica)."""
     with Image.open(io.BytesIO(data)) as im:
