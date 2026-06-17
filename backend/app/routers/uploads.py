@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import io
 import os
+import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from PIL import Image, UnidentifiedImageError
@@ -44,10 +45,12 @@ def carica(files: list[UploadFile], db: Session = Depends(get_db)):
         except UnidentifiedImageError:
             raise HTTPException(422, f"Immagine non leggibile: {f.filename}")
 
-        src = SourceImage(original_filename=f.filename or "master", width=w, height=h, storage_path="")
-        path = f"masters/{src.id}{ext}"
+        # Genera l'id ESPLICITAMENTE: il default SQLAlchemy si applica solo al flush,
+        # quindi src.id sarebbe None qui e il path collasserebbe su "masters/None.png".
+        sid = str(uuid.uuid4())
+        path = f"masters/{sid}{ext}"
         storage.put(path, data, CONTENT_TYPE.get(ext, "application/octet-stream"))
-        src.storage_path = path
+        src = SourceImage(id=sid, original_filename=f.filename or "master", width=w, height=h, storage_path=path)
         db.add(src)
         risultati.append(src)
 
