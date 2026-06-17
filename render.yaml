@@ -1,0 +1,39 @@
+# Deploy del backend FastAPI su Render (https://render.com).
+# Crea il servizio da "New + → Blueprint" puntando a questo repo, oppure replica manualmente.
+services:
+  - type: web
+    name: food-adapter-api
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free            # per i job AI (Fase 2) passare a 'starter' (niente spin-down) e 1 sola istanza
+    numInstances: 1       # IMPORTANTE: i job in background sono in-process → tenere 1 istanza
+    healthCheckPath: /health
+    envVars:
+      # --- App (secret: impostare valori nel dashboard) ---
+      - key: APP_PASSWORD
+        sync: false
+      - key: SESSION_SECRET
+        generateValue: true
+      - key: CORS_ORIGINS         # es. https://tuo-sito.netlify.app
+        sync: false
+      - key: MAX_FILE_MB
+        value: "40"
+      # --- Supabase (obbligatori in produzione: il filesystem di Render è effimero) ---
+      - key: DATABASE_URL
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_KEY
+        sync: false
+      - key: STORAGE_BUCKET
+        value: food-adapter
+      # --- Adobe (Fase 2, opzionali: senza chiavi resta lo stub locale) ---
+      - key: DEFAULT_RENDER_ENGINE
+        value: local
+      - key: ADOBE_CLIENT_ID
+        sync: false
+      - key: ADOBE_CLIENT_SECRET
+        sync: false
+      - key: COSTO_PER_OPERAZIONE_AI
+        value: "0.0"

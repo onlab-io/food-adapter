@@ -1,0 +1,13 @@
+# Deploy del frontend su Netlify.
+# In Netlify imposta "Base directory" = frontend (così trova questo file).
+# Imposta la variabile d'ambiente VITE_API_BASE = URL del backend Render (es. https://food-adapter-api.onrender.com).
+
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+# SPA: tutte le route servono index.html
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
