@@ -13,7 +13,7 @@ const VUOTO: TemplateProfileInput = {
   text_layers: {},
   preserve_mode: "sfondo_only",
   prompt_default: "",
-  engine: "photoshop",
+  engine: "stability",
 };
 
 export default function TemplateEditor({
@@ -93,7 +93,8 @@ export default function TemplateEditor({
           <div className="field">
             <label>Motore</label>
             <select value={t.engine} onChange={(e) => set("engine", e.target.value as TemplateProfileInput["engine"])}>
-              <option value="photoshop">Adobe Photoshop API (AI)</option>
+              <option value="stability">Stability AI (outpaint)</option>
+              <option value="photoshop">Adobe Photoshop API</option>
               <option value="local">Stub locale (no AI, test)</option>
             </select>
           </div>

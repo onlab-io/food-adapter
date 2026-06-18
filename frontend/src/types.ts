@@ -49,7 +49,7 @@ export interface TemplateProfile {
   text_layers: Record<string, string>;
   preserve_mode: "sfondo_only" | "full_ai";
   prompt_default: string;
-  engine: "photoshop" | "local";
+  engine: "stability" | "photoshop" | "local";
   psd_storage_path: string | null;
 }
 

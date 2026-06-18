@@ -32,15 +32,18 @@ def _tolleranza(db: Session) -> float:
 def _template_costa_ai(template: TemplateProfile) -> tuple[bool, float]:
     """Ritorna (is_ai, costo_stimato) per un template, in base al motore effettivo."""
     s = get_settings()
-    usa_adobe = template.engine == "photoshop" and s.adobe_configured
-    if usa_adobe:
+    usa_ai = (
+        (template.engine == "stability" and s.stability_configured)
+        or (template.engine == "photoshop" and s.adobe_configured)
+    )
+    if usa_ai:
         try:
-            return True, get_provider("photoshop").estimate_cost(
+            return True, get_provider(template.engine).estimate_cost(
                 TemplateSpec(template.nome, template.larghezza_px, template.altezza_px)
             )
         except Exception:  # noqa: BLE001
             return True, s.costo_per_operazione_ai
-    return False, 0.0  # stub locale: nessun costo
+    return False, 0.0  # stub locale: nessun costo AI
 
 
 def _elimina_job_completo(db: Session, job: Job, storage) -> None:

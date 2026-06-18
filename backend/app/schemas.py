@@ -53,7 +53,7 @@ class TemplateProfileBase(BaseModel):
     text_layers: dict = Field(default_factory=dict)
     preserve_mode: Literal["sfondo_only", "full_ai"] = "sfondo_only"
     prompt_default: str = ""
-    engine: Literal["photoshop", "local"] = "photoshop"
+    engine: Literal["stability", "photoshop", "local"] = "stability"
 
 
 class TemplateProfileCreate(TemplateProfileBase):

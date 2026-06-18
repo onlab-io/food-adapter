@@ -63,9 +63,10 @@ Oltre al crop deterministico, l'app compone il **prodotto finito** dai template 
 lo smart object del prodotto, **genera lo sfondo mancante con AI** (Firefly, `sfondo_only` →
 il piatto reale resta intatto) e renderizza il file finale con layout, alle px esatte.
 
-- **Senza credenziali Adobe** il motore `local` produce uno **stub** (prodotto a fuoco su sfondo
-  cover sfocato) per collaudare il flusso a costo zero.
-- **Con Adobe** (motore `photoshop`) la composizione reale avviene via Photoshop API.
+- **Senza chiavi AI** il motore `local` estende lo sfondo in modo deterministico (no AI, costo 0).
+- **Stability AI** (motore `stability`, consigliato): outpaint AI con chiave self-service da
+  https://platform.stability.ai → `STABILITY_API_KEY`. A consumo (~pochi centesimi/immagine).
+- **Adobe** (motore `photoshop`): via Photoshop API, richiede entitlement Firefly Services (enterprise).
 
 Credenziali (server-side, mai esposte): in `backend/.env`
 ```

@@ -136,7 +136,7 @@ class TemplateProfile(Base):
     # Generazione sfondo
     preserve_mode: Mapped[str] = mapped_column(String, default="sfondo_only")  # sfondo_only|full_ai
     prompt_default: Mapped[str] = mapped_column(Text, default="")
-    engine: Mapped[str] = mapped_column(String, default="photoshop")     # photoshop|local
+    engine: Mapped[str] = mapped_column(String, default="stability")     # stability|photoshop|local
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), onupdate=func.now()

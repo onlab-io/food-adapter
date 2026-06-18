@@ -28,12 +28,14 @@ services:
         sync: false
       - key: STORAGE_BUCKET
         value: photo-adapter
-      # --- Adobe (Fase 2, opzionali: senza chiavi resta lo stub locale) ---
+      # --- Motore AI (Fase 2, opzionale: senza chiavi resta lo stub locale) ---
       - key: DEFAULT_RENDER_ENGINE
         value: local
+      - key: STABILITY_API_KEY        # outpaint AI (platform.stability.ai)
+        sync: false
       - key: ADOBE_CLIENT_ID
         sync: false
       - key: ADOBE_CLIENT_SECRET
         sync: false
       - key: COSTO_PER_OPERAZIONE_AI
-        value: "0.0"
+        value: "0.04"

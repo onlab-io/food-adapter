@@ -10,9 +10,14 @@ def get_provider(name: str | None = None) -> RenderProvider:
     """Ritorna il provider richiesto; ripiega su 'local' se Adobe non è configurato."""
     s = get_settings()
     engine = (name or s.default_render_engine or "local").lower()
+    if engine == "stability":
+        if not s.stability_configured:
+            return LocalStubProvider()  # nessuna chiave: stub a costo zero
+        from .stability import StabilityProvider
+
+        return StabilityProvider()
     if engine == "photoshop":
         if not s.adobe_configured:
-            # Nessuna chiave: usa lo stub locale invece di fallire (collaudo a costo zero).
             return LocalStubProvider()
         from .compose import AdobePhotoshopProvider
 

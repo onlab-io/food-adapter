@@ -28,8 +28,10 @@ class Settings(BaseSettings):
     # --- Adobe Firefly Services / Photoshop API (Fase 2) ---
     adobe_client_id: str = ""                # OAuth Server-to-Server (server-side, mai loggato)
     adobe_client_secret: str = ""
-    default_render_engine: str = "local"     # local (stub, costo 0) | photoshop (Adobe, a crediti)
-    costo_per_operazione_ai: float = 0.0     # stima costo per operazione AI (crediti/€), configurabile
+    # --- Stability AI (outpaint, alternativa accessibile ad Adobe) ---
+    stability_api_key: str = ""              # da platform.stability.ai (server-side)
+    default_render_engine: str = "local"     # local (stub, 0) | stability (AI) | photoshop (Adobe)
+    costo_per_operazione_ai: float = 0.04    # stima costo per operazione AI (€), configurabile
 
     @property
     def cors_list(self) -> list[str]:
@@ -43,6 +45,10 @@ class Settings(BaseSettings):
     @property
     def adobe_configured(self) -> bool:
         return bool(self.adobe_client_id and self.adobe_client_secret)
+
+    @property
+    def stability_configured(self) -> bool:
+        return bool(self.stability_api_key)
 
 
 @lru_cache
