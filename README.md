@@ -140,3 +140,6 @@ Passi:
 - I formati che richiederebbero outpainting sono evidenziati (tag *“AI in Fase 2”*) e gestiti
   con crop forzato o letterbox secondo la scelta del profilo.
 - Tutti gli output rispettano le dimensioni esatte del formato (verifica finale prima dell'export).
+- **File di lavoro effimeri**: i master caricati e gli output generati vengono cancellati a fine
+  batch ("Nuovo batch" / "Esci"), con pulizia automatica dei batch abbandonati oltre 24h. Resta
+  salvata solo la configurazione (formati, template, impostazioni).

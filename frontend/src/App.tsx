@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getToken, clearToken } from "./api";
+import { api, getToken, clearToken } from "./api";
 import Login from "./pages/Login";
 import Formati from "./pages/Formati";
 import Batch from "./pages/Batch";
@@ -35,6 +35,12 @@ export default function App() {
         <button
           className="small"
           onClick={() => {
+            // A fine sessione: cancella i file del batch attivo (best-effort).
+            const jid = localStorage.getItem("fia_active_job");
+            if (jid) {
+              api.deleteJob(jid).catch(() => {});
+              localStorage.removeItem("fia_active_job");
+            }
             clearToken();
             setAuthed(false);
           }}

@@ -109,6 +109,7 @@ export const api = {
   createJob: (source_image_ids: string[], format_ids: string[], template_ids: string[] = []) =>
     call<JobPiano>("/jobs", jsonBody({ source_image_ids, format_ids, template_ids })),
   runJob: (id: string) => call<Job>(`/jobs/${id}/run`, { method: "POST" }),
+  deleteJob: (id: string) => call<void>(`/jobs/${id}`, { method: "DELETE" }),
   retryFailed: (id: string) => call<Job>(`/jobs/${id}/retry-failed`, { method: "POST" }),
   getJob: (id: string) => call<Job>(`/jobs/${id}`),
 

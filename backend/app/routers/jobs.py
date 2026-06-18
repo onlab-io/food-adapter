@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import io
+from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from PIL import Image
@@ -42,12 +43,62 @@ def _template_costa_ai(template: TemplateProfile) -> tuple[bool, float]:
     return False, 0.0  # stub locale: nessun costo
 
 
+def _elimina_job_completo(db: Session, job: Job, storage) -> None:
+    """Cancella un job, i suoi output, le immagini master e i relativi file di storage.
+
+    La configurazione (formati/template/impostazioni) non viene toccata.
+    """
+    for it in list(job.outputs):
+        if it.storage_path:
+            try:
+                storage.delete(it.storage_path)
+            except Exception:  # noqa: BLE001
+                pass
+    srcs = db.scalars(
+        select(SourceImage).where(SourceImage.id.in_(job.source_image_ids or []))
+    ).all()
+    for s in srcs:
+        if s.storage_path:
+            try:
+                storage.delete(s.storage_path)
+            except Exception:  # noqa: BLE001
+                pass
+        db.delete(s)
+    db.delete(job)  # cascade -> output_items
+    db.commit()
+
+
+def _pulizia_vecchi(db: Session, storage, ore: int = 24) -> None:
+    """Sweep: rimuove i batch (e i loro file) più vecchi di `ore`. Best-effort."""
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=ore)
+    vecchi = db.scalars(select(Job).where(Job.created_at < cutoff)).all()
+    for j in vecchi:
+        try:
+            _elimina_job_completo(db, j, storage)
+        except Exception:  # noqa: BLE001
+            db.rollback()
+
+
+@router.delete("/{job_id}", status_code=204)
+def elimina_job(job_id: str, db: Session = Depends(get_db)):
+    """Elimina un batch e tutti i suoi file (master + output). Usato a 'Nuovo batch'/'Esci'."""
+    job = db.get(Job, job_id)
+    if job:
+        _elimina_job_completo(db, job, get_storage())
+
+
 @router.post("", response_model=JobPiano, status_code=201)
 def crea_job(payload: JobCreate, db: Session = Depends(get_db)):
     """Crea il job e calcola il PIANO per ogni coppia immagine×(formato o template) — RF-13.
 
     Conta le operazioni AI reali e il costo stimato (NFR-4): conferma esplicita lato UI prima del run.
     """
+    # Sweep dei batch abbandonati (>24h) ad ogni nuovo job — "pulizia giornaliera" senza scheduler.
+    try:
+        _pulizia_vecchi(db, get_storage())
+    except Exception:  # noqa: BLE001
+        db.rollback()
+
     sources = db.scalars(select(SourceImage).where(SourceImage.id.in_(payload.source_image_ids))).all()
     formats = db.scalars(select(FormatProfile).where(FormatProfile.id.in_(payload.format_ids))).all()
     templates = db.scalars(

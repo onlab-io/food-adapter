@@ -47,6 +47,11 @@ export default function Batch() {
     });
   }, []);
 
+  // Traccia il job attivo così il logout ("Esci") può cancellarne i file.
+  useEffect(() => {
+    if (job) localStorage.setItem("fia_active_job", job.id);
+  }, [job?.id]);
+
   useEffect(() => {
     if (!job || job.stato !== "running") return;
     const i = setInterval(async () => {
@@ -114,7 +119,16 @@ export default function Batch() {
     if (job) setJob(await api.getJob(job.id));
   }
 
-  function reset() {
+  async function reset() {
+    // A fine batch: cancella master + output del job corrente (la config resta).
+    if (job) {
+      try {
+        await api.deleteJob(job.id);
+      } catch {
+        /* best-effort */
+      }
+      localStorage.removeItem("fia_active_job");
+    }
     setPiano(null);
     setJob(null);
     setSources([]);
