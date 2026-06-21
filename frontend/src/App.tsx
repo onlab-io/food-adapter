@@ -1,22 +1,11 @@
-import { useEffect, useState } from "react";
-import { getToken, clearToken } from "./api";
-import Login from "./pages/Login";
+import { useState } from "react";
 import Formati from "./pages/Formati";
 import Batch from "./pages/Batch";
 
 type View = "batch" | "formati";
 
 export default function App() {
-  const [authed, setAuthed] = useState<boolean>(!!getToken());
   const [view, setView] = useState<View>("batch");
-
-  useEffect(() => {
-    const onUnauth = () => setAuthed(false);
-    window.addEventListener("fia-unauthorized", onUnauth);
-    return () => window.removeEventListener("fia-unauthorized", onUnauth);
-  }, []);
-
-  if (!authed) return <Login onLogin={() => setAuthed(true)} />;
 
   return (
     <>
@@ -32,15 +21,6 @@ export default function App() {
           </button>
         </nav>
         <span className="spacer" />
-        <button
-          className="small"
-          onClick={() => {
-            clearToken();
-            setAuthed(false);
-          }}
-        >
-          Esci
-        </button>
       </header>
       <main className="container">{view === "batch" ? <Batch /> : <Formati />}</main>
     </>

@@ -8,8 +8,6 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .config import get_settings
 from .db import Base, engine
-from .schemas import LoginRequest, LoginResponse
-from .auth import login
 from .routers import (
     download,
     formats,
@@ -44,11 +42,6 @@ app.add_middleware(
 @app.get("/health")
 def health():
     return {"status": "ok", "fase": 1, "storage": "supabase" if _settings.storage_configured else "local"}
-
-
-@app.post("/auth/login", response_model=LoginResponse, tags=["auth"])
-def auth_login(payload: LoginRequest):
-    return LoginResponse(token=login(payload.password))
 
 
 app.include_router(formats.router)

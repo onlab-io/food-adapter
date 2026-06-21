@@ -11,17 +11,6 @@ import type {
 } from "./types";
 
 const BASE = import.meta.env.VITE_API_BASE ?? "http://localhost:8000";
-const TOKEN_KEY = "fia_token";
-
-export function getToken(): string | null {
-  return localStorage.getItem(TOKEN_KEY);
-}
-export function setToken(t: string) {
-  localStorage.setItem(TOKEN_KEY, t);
-}
-export function clearToken() {
-  localStorage.removeItem(TOKEN_KEY);
-}
 
 class ApiError extends Error {
   status: number;
@@ -33,14 +22,7 @@ class ApiError extends Error {
 
 async function call<T>(path: string, opts: RequestInit = {}): Promise<T> {
   const headers = new Headers(opts.headers);
-  const token = getToken();
-  if (token) headers.set("Authorization", `Bearer ${token}`);
   const res = await fetch(BASE + path, { ...opts, headers });
-  if (res.status === 401) {
-    clearToken();
-    window.dispatchEvent(new Event("fia-unauthorized"));
-    throw new ApiError(401, "Non autenticato");
-  }
   if (!res.ok) {
     let detail = res.statusText;
     try {
@@ -62,14 +44,6 @@ function jsonBody(data: unknown): RequestInit {
 }
 
 export const api = {
-  // auth
-  async login(password: string): Promise<string> {
-    const res = await fetch(BASE + "/auth/login", jsonBody({ password }));
-    if (!res.ok) throw new ApiError(res.status, "Password errata");
-    const j = await res.json();
-    return j.token as string;
-  },
-
   // formats
   listFormats: () => call<FormatProfile[]>("/formats"),
   createFormat: (data: FormatProfileInput) => call<FormatProfile>("/formats", jsonBody(data)),
